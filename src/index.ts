@@ -1,18 +1,32 @@
-import express from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import dotenv from 'dotenv'
-dotenv.config()
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import { errorHandler, notFoundHandler, methodNotAllowedHandler,logger } from './utils/middleware/error-handler';
 
-const app = express()
-app.use(helmet())
-app.use(cors())
-app.use(express.json())
+dotenv.config();
 
+const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+// Routes
 app.get('/', (req, res) => {
-  res.send('welcome to EmmaSunny home')
+  res.send('welcome to EmmaSunny home');
 });
-let port = process.env.PORT
-app.listen(port, ()=>{
-    console.log(`app is running on port ${port}`);
-})
+
+
+app.use(notFoundHandler);
+app.use(methodNotAllowedHandler(['GET', 'POST', 'PUT', 'DELETE']));
+// Global error handler - must be last middleware
+app.use(errorHandler);
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  logger.info(`App is running on port ${port}`);
+  console.log(`App is running on port ${port}`);
+});
