@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Customer {
+  id            String    @id @default(uuid())
+  first_name    String
+  last_name     String
+  email         String
+  phone         String
+  last_visit    DateTime
+  gender        String
+  DateOfBirth   Int
+  customer_code String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  is_active     String
+  profile_image String
+
+  product_id String
+  officer_id String
+
+  product Product @relation(fields: [product_id], references: [id])
+  officer Officer @relation(fields: [officer_id], references: [id])
+
+  @@index([id])
+}
+
+model Product {
+  id           String      @id @default(uuid())
+  product_name String
+  price        Int
+  description  String
+  valid_period Int
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  customers Customer[]
+}
+
+model Officer {
+  id         String      @id @default(uuid())
+  username   String
+  email      String
+  phone      Int
+  role       String     // "admin" | "staff"
+  password   String
+
+  customers Customer[]
+  logs      Log[]
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  officer_id    String
+  action    String
+  timestamp DateTime @default(now())
+
+  Officer      Officer @relation(fields: [officer_id], references: [id])
+}
