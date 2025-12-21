@@ -4,61 +4,85 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  // Connection URL removed from schema; configure connection URLs for Migrate in prisma.config.ts
+  // and pass `adapter` (direct DB) or `accelerateUrl` (Accelerate) to the PrismaClient constructor.
 }
 
 model Customer {
   id            String    @id @default(uuid())
   first_name    String
   last_name     String
-  email         String
+  email         String    @unique
   phone         String
-  last_visit    DateTime
+  address       String
+  occuption     String?
+  last_visit    DateTime? // *
   gender        String
-  DateOfBirth   Int
-  customer_code String
+  DateOfBirth   DateTime? //Date
+  customer_code String    @unique // automatically generated 
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
-  is_active     String
+  expiry_date   DateTime?
+  is_active     Boolean   @default(true) //this is a boolean
   profile_image String
 
   product_id String
   officer_id String
 
-  product Product @relation(fields: [product_id], references: [id])
-  officer Officer @relation(fields: [officer_id], references: [id])
+  product         Product           @relation(fields: [product_id], references: [id])
+  officer         Officer           @relation(fields: [officer_id], references: [id])
+  customerRenewal CustomerRenewal[]
 
   @@index([id])
 }
 
 model Product {
-  id           String      @id @default(uuid())
-  product_name String
+  id           String   @id @default(uuid())
+  product_name String   @unique
   price        Int
   description  String
-  valid_period Int
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
+  valid_period Int      @default(1) //default is 1 year
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
-  customers Customer[]
+  customers       Customer[]
+  customerRenewal CustomerRenewal[]
 }
 
 model Officer {
-  id         String      @id @default(uuid())
-  username   String
-  email      String
-  phone      Int
-  role       String     // "admin" | "staff"
+  id         String @id @default(uuid())
+  first_name String
+  last_name  String
+  username   String @unique
+  email      String @unique
+  phone      String
+  role       String // "admin" | "staff"
   password   String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
-  customers Customer[]
-  logs      Log[]
+  customers       Customer[]
+  logs            Log[]
+  customerRenewal CustomerRenewal[]
 }
 
 model Log {
-  id        Int      @id @default(autoincrement())
-  officer_id    String
-  action    String
-  timestamp DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  officer_id String
+  action     String
+  timestamp  DateTime @default(now())
 
-  Officer      Officer @relation(fields: [officer_id], references: [id])
+  Officer Officer @relation(fields: [officer_id], references: [id])
+}
+
+model CustomerRenewal {
+  id          Int      @id @default(autoincrement())
+  customer_id String
+  product_id  String
+  renewed_by  String
+  created_at  DateTime @default(now())
+
+  customers Customer @relation(fields: [customer_id], references: [id])
+  products  Product  @relation(fields: [product_id], references: [id])
+  officers  Officer  @relation(fields: [renewed_by], references: [id])
 }

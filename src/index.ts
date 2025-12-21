@@ -3,7 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { errorHandler, notFoundHandler, methodNotAllowedHandler,logger } from './utils/middleware/error-handler';
-
+import authRouter from "./Auth/auth.route"
+import customerRouter from "./Customer/customer.route"
 dotenv.config();
 
 const app = express();
@@ -15,9 +16,10 @@ app.use(express.json());
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('welcome to EmmaSunny home');
+  res.send('welcome to EmmaSunny api');
 });
-
+app.use("/auth",authRouter)
+app.use("/customer", customerRouter)
 
 app.use(notFoundHandler);
 app.use(methodNotAllowedHandler(['GET', 'POST', 'PUT', 'DELETE']));
