@@ -31,7 +31,7 @@ export const loginService = async (data: UserData) => {
     };
   }
   // check if password matches with password in the db
-  const matchedPassword = bcrypt.compare(data.password, officer.password);
+  const matchedPassword = await bcrypt.compare(data.password, officer.password);
   if (!matchedPassword) {
     return {
       status: false,

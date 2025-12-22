@@ -18,6 +18,12 @@ export const loginController = async (req: Request, res: Response) => {
     return res.status(result.code).json(result);
   } catch (error: any) {
     console.error("Error logging in: ", error);
+    res.status(500).json({
+            status: false,
+            code: 500,
+            message: "Internal server error",
+            data: null,
+        });
     throw Error("Error logging in");
   }
 };
@@ -66,6 +72,12 @@ export const registerOfficerController = async (
     return res.status(result.code).json(result);
   } catch (error) {
     console.error("Error logging in: ", error);
+    res.status(500).json({
+            status: false,
+            code: 500,
+            message: "Internal server error",
+            data: null,
+        });
     throw Error("Error logging in");
   }
 };
