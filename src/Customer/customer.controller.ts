@@ -1,3 +1,5 @@
+import {  } from "./customer.service";
+
 import { NextFunction, Request, Response } from "express";
 import {
     deleteCustomerService,
@@ -5,8 +7,17 @@ import {
   getCustomerById,
   registerCustomerService,
   renewCustomerService,
+  getCustomerStatisticsService
 } from "./customer.service";
 
+export const getCustomerStatistics = async (req: Request, res: Response) => {
+  try {
+    const result = await getCustomerStatisticsService();
+    res.status(result.code).json(result);
+  } catch (error: any) {
+    res.status(500).json({ status: false, message: "Failed to fetch statistics" });
+  }
+};
 export const registerCustomerController = async (
   req: Request,
   res: Response

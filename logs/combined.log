@@ -36,3 +36,11 @@
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 06:11:13"}
 {"level":"warn","message":"404 Not Found: GET /officer/974fdac8-140f-40a0-9946-353fc88e2ee1","service":"cis-backend","timestamp":"2025-12-22 06:11:33"}
 {"ip":"::ffff:127.0.0.1","level":"warn","message":"Route /officer/974fdac8-140f-40a0-9946-353fc88e2ee1 not found","method":"GET","service":"cis-backend","statusCode":404,"timestamp":"2025-12-22 06:11:33","url":"/officer/974fdac8-140f-40a0-9946-353fc88e2ee1","userAgent":"Thunder Client (https://www.thunderclient.com)"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 06:15:47"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 20:19:15"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 20:24:30"}
+{"level":"warn","message":"404 Not Found: GET /auth/login","service":"cis-backend","timestamp":"2025-12-22 20:30:47"}
+{"ip":"::ffff:127.0.0.1","level":"warn","message":"Route /auth/login not found","method":"GET","service":"cis-backend","statusCode":404,"timestamp":"2025-12-22 20:30:47","url":"/auth/login","userAgent":"Thunder Client (https://www.thunderclient.com)"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 20:33:53"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 20:38:09"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 20:38:18"}

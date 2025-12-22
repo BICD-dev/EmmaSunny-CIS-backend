@@ -1,3 +1,4 @@
+
 import prisma from "../prisma";
 import { AppError } from "../utils/middleware/error-handler";
 interface CustomerData {
@@ -277,7 +278,48 @@ export const deleteCustomerService = async (id: string, officer_id: string) => {
   }
 };
 
+// Service to get customer statistics
+export const getCustomerStatisticsService = async () => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
 
+  const [
+    total,
+    active,
+    expired,
+    registeredThisMonth,
+    expiringThisWeek,
+    expiringThisMonth
+  ] = await Promise.all([
+    prisma.customer.count(),
+    prisma.customer.count({ where: { is_active: true } }),
+    prisma.customer.count({ where: { is_active: false } }),
+    prisma.customer.count({ where: { created_at: { gte: startOfMonth, lte: endOfMonth } } }),
+    prisma.customer.count({ where: { expiry_date: { gte: startOfWeek, lte: endOfWeek } } }),
+    prisma.customer.count({ where: { expiry_date: { gte: startOfMonth, lte: endOfMonth } } })
+  ]);
+
+  return {
+    status: true,
+    code: 200,
+    message: "Customer statistics fetched successfully",
+    data: {
+      total_customers: total,
+      active_customers: active,
+      expired_customers: expired,
+      registered_this_month: registeredThisMonth,
+      expiring_this_week: expiringThisWeek,
+      expiring_this_month: expiringThisMonth
+    }
+  };
+};
 function calculateAge(dob: Date) {
   const today = new Date();
   let age = today.getFullYear() - dob.getFullYear();
