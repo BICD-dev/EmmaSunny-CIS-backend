@@ -5,15 +5,15 @@ import { authenticate } from '../utils/middleware/authentication';
 const router = Router();
 
 // Add product
-router.post('/products',authenticate, addProduct);
+router.post('/',authenticate, addProduct);
 
 // get all products
-router.get('/products', getAllProducts);
+router.get('/',authenticate, getAllProducts);
 
 // Get product details
-router.get('/products/:id', getProductDetails);
+router.get('/:id',authenticate, getProductDetails);
 // Delete product
-router.delete('/products/:id', deleteProduct);
+router.delete('/:id', authenticate, deleteProduct);
 
 // edit product .... what am i editting sef?
 
