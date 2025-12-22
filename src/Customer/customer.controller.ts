@@ -12,6 +12,7 @@ export const registerCustomerController = async (
   res: Response
 ) => {
   try {
+    let payload = req.body;
     const {
       first_name,
       last_name,
@@ -20,9 +21,8 @@ export const registerCustomerController = async (
       gender,
       DateOfBirth,
       product_id,
-      officer_id,
       address
-    } = req.body;
+    } = payload;
     // validate for missing fields
     if (
       !first_name ||
@@ -32,7 +32,6 @@ export const registerCustomerController = async (
       !gender ||
       !DateOfBirth ||
       !product_id ||
-      !officer_id ||
       !address
     ) {
       return res.status(400).json({
@@ -40,16 +39,17 @@ export const registerCustomerController = async (
         message: "Missing fields",
       });
     }
+    // validate authentication
+    const officer = req.user;
+    const officer_id = officer?.id;
+    // add officer id to payload
+    payload = { ...payload, officer_id };
+
     // call the service
-    const result = await registerCustomerService(req.body);
+    const result = await registerCustomerService(payload);
     return res.status(result.code).json(result);
   } catch (error: any) {
-    // throw error
-    return res.status(500).json({
-      status: false,
-      message: "Internal Server Error",
-      error: error,
-    });
+    throw error
   }
 };
 

@@ -39,7 +39,7 @@ model Customer {
 model Product {
   id           String   @id @default(uuid())
   product_name String   @unique
-  price        Int
+  price        String
   description  String
   valid_period Int      @default(1) //default is 1 year
   created_at   DateTime @default(now())

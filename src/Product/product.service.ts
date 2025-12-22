@@ -3,7 +3,7 @@ import { AppError } from "../utils/middleware/error-handler";
 
 interface ProductData {
   name: string;
-  price: number;
+  price: string;
   description: string;
   officer_id: string;
   // valid_period:number, default is 1

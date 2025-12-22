@@ -1,2 +1,38 @@
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-21 19:24:39"}
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-21 19:24:42"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:54:45"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:54:59"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:55:22"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:55:49"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:56:51"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:57:01"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:57:24"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 04:58:17"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:01:23"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:01:44"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:01:50"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:02:53"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:05:53"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:06:06"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:06:32"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:06:50"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:09:53"}
+{"ip":"::ffff:127.0.0.1","level":"warn","message":"Expected double-quoted property name in JSON at position 49 (line 4 column 1)","method":"POST","service":"cis-backend","statusCode":400,"timestamp":"2025-12-22 05:15:38","url":"/auth/login","userAgent":"Thunder Client (https://www.thunderclient.com)"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:17:43"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:42:08"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:43:40"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:46:08"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:47:05"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:49:16"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:49:25"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:50:58"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:51:41"}
+{"ip":"::ffff:127.0.0.1","level":"warn","message":"Product not found","method":"POST","service":"cis-backend","statusCode":404,"timestamp":"2025-12-22 05:51:47","url":"/customer/","userAgent":"Thunder Client (https://www.thunderclient.com)"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:52:12"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:53:02"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 05:53:41"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 06:06:20"}
+{"ip":"::ffff:127.0.0.1","level":"warn","message":"Customer already exists","method":"POST","service":"cis-backend","statusCode":409,"timestamp":"2025-12-22 06:10:02","url":"/customer/","userAgent":"Thunder Client (https://www.thunderclient.com)"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-22 06:11:13"}
+{"level":"warn","message":"404 Not Found: GET /officer/974fdac8-140f-40a0-9946-353fc88e2ee1","service":"cis-backend","timestamp":"2025-12-22 06:11:33"}
+{"ip":"::ffff:127.0.0.1","level":"warn","message":"Route /officer/974fdac8-140f-40a0-9946-353fc88e2ee1 not found","method":"GET","service":"cis-backend","statusCode":404,"timestamp":"2025-12-22 06:11:33","url":"/officer/974fdac8-140f-40a0-9946-353fc88e2ee1","userAgent":"Thunder Client (https://www.thunderclient.com)"}

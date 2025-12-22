@@ -1,8 +1,9 @@
 // utils/jwt.ts
 import jwt, { SignOptions } from "jsonwebtoken";
+import dotenv from 'dotenv';
 
-// dotenv.config()
-export const JWT_SECRET: string | undefined = process.env.JWT_SECRET_KEY;
+dotenv.config()
+export const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET environment variable is not set");
