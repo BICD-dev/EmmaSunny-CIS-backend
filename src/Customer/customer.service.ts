@@ -1,6 +1,7 @@
 
 import prisma from "../prisma";
 import { AppError } from "../utils/middleware/error-handler";
+import { generateIDCard } from '../utils/idCard/idCardGenerator';
 interface CustomerData {
   first_name: string;
   last_name: string;
@@ -12,18 +13,16 @@ interface CustomerData {
   product_id: string;
   officer_id: string;
 }
+
 export const registerCustomerService = async (payload: CustomerData) => {
-  // can a customer register for more than one product ? apparently yes
-  // add customer to customer db if the email already exists then use the catch bloc to thorw error
   try {
-    //   find the product using id
     const product = await prisma.product.findUnique({
       where: { id: payload.product_id },
     });
     if (!product) {
       throw new AppError("Product not found", 404);
     }
-    // get the officer using id
+
     const officer = await prisma.officer.findUnique({
       where: { id: payload.officer_id },
     });
@@ -32,9 +31,8 @@ export const registerCustomerService = async (payload: CustomerData) => {
     }
 
     const year = new Date().getFullYear();
-    // starting the transaction 
+
     return await prisma.$transaction(async (tx) => {
-        // geneate the 5 digit sequence in the customer code
       const count = await tx.customer.count({
         where: {
           customer_code: {
@@ -42,13 +40,13 @@ export const registerCustomerService = async (payload: CustomerData) => {
           },
         },
       });
-    //   generate the customer code
-      const customerCode = generateCustomerCode(year, count + 1);
 
+      const customerCode = generateCustomerCode(year, count + 1);
       let now = new Date();
+      
       const data = {
         ...payload,
-        is_active:true,
+        is_active: true,
         customer_code: customerCode,
         last_visit: new Date(),
         profile_image: "pic",
@@ -64,14 +62,36 @@ export const registerCustomerService = async (payload: CustomerData) => {
         customer = await tx.customer.create({
           data: data,
         });
-        // log action in the log table
+
         await tx.log.create({
-            data:{
-                officer_id:officer.id,
-                action:`Registered_customer_${customer.customer_code}`
-            }
-        })
-        // return succes message with associated data
+          data: {
+            officer_id: officer.id,
+            action: `Registered_customer_${customer.customer_code}`
+          }
+        });
+
+        // Generate ID Card PDF
+        const idCardData = {
+          id: customer.id,
+          fullname: `${customer.first_name} ${customer.last_name}`,
+          email: customer.email,
+          phone: customer.phone,
+          customerCode: customer.customer_code,
+          dateOfBirth: customer.DateOfBirth,
+          address: customer.address,
+          registration_date: customer.created_at,
+          expiry_date: customer.expiry_date,
+          product: {
+            name: product.product_name,
+            price: product.price,
+          },
+          officer: {
+            name: officer.username,
+          }
+        };
+
+        const idCardPath = await generateIDCard(idCardData);
+
         return {
           success: true,
           message: "Customer created successfully",
@@ -83,11 +103,12 @@ export const registerCustomerService = async (payload: CustomerData) => {
             phone: customer.phone,
             customerCode: customer.customer_code,
             dateOfBirth: customer.DateOfBirth,
-            address:customer.address,
+            address: customer.address,
             last_visit: customer.last_visit,
             registration_date: customer.created_at,
             expiry_date: customer.expiry_date,
             is_active: customer.is_active,
+            idCardPath: idCardPath, // Add the PDF path
             product: {
               id: product.id,
               name: product.product_name,
@@ -100,11 +121,10 @@ export const registerCustomerService = async (payload: CustomerData) => {
           },
         };
       } catch (error: any) {
-        // this flags if the email already exists
         if (error.code === "P2002") {
           throw new AppError("Customer already exists", 409);
         }
-        throw error; //for any unexpected error
+        throw error;
       }
     });
   } catch (error: any) {
@@ -116,7 +136,15 @@ export const registerCustomerService = async (payload: CustomerData) => {
 export const getAllCustomersService = async () => {
   try {
     // this is a batch get for customers
-    const customers = await prisma.customer.findMany();
+    const customers = await prisma.customer.findMany({
+      include:{
+        product:{
+          select:{
+            product_name:true
+          }
+        }
+      }
+    });
     return {
       status: true,
       code:200,
@@ -132,14 +160,17 @@ export const getAllCustomersService = async () => {
 export const getCustomerById = async (id: string) => {
   try {
     // get customer by id
-    const customers = await prisma.customer.findUnique({
+    const customer = await prisma.customer.findUnique({
       where: { id: id },
     });
+    if(!customer){
+      throw new AppError("Customer not found", 404);
+    }
     return {
       status: true,
       code: 200,
       message: "Customer details gotten successfully",
-      data: customers,
+      data: customer,
     };
   } catch (error: any) {
     console.error("Error getting customer: ", error);

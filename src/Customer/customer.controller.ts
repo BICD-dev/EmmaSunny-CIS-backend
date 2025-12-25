@@ -1,5 +1,5 @@
-import {  } from "./customer.service";
-
+import fs from "fs";
+import path from "path";
 import { NextFunction, Request, Response } from "express";
 import {
     deleteCustomerService,
@@ -9,6 +9,7 @@ import {
   renewCustomerService,
   getCustomerStatisticsService
 } from "./customer.service";
+import prisma from "../prisma";
 
 export const getCustomerStatistics = async (req: Request, res: Response) => {
   try {
@@ -61,6 +62,70 @@ export const registerCustomerController = async (
     return res.status(result.code).json(result);
   } catch (error: any) {
     throw error
+  }
+};
+export const downloadIDCard = async (req: Request, res: Response) => {
+  try {
+    const { filename } = req.params;
+    const officer_id = req.user?.id;
+    
+    if (!officer_id) {
+      return res.status(403).json({
+        status: false,
+        message: "Officer couldn't be authenticated",
+      });
+    }
+
+    // Sanitize filename to prevent path traversal attacks
+    const sanitizedFilename = path.basename(filename);
+    const filePath = path.join(__dirname, '../../id-cards', sanitizedFilename);
+    console.log({
+      __dirname,
+      sanitizedFilename,
+      filePath
+    });
+
+    // Check if id card exists in path
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        status: false,
+        message: "ID card not found",
+      });
+    }
+    
+    // Log the download action
+    await prisma.log.create({
+      data: {
+        officer_id: officer_id,
+        action: `Downloaded_ID_Card_${sanitizedFilename}`,
+      },
+    });
+    
+    // Set proper headers before download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
+    
+    // Download
+    res.download(filePath, sanitizedFilename, (err) => {
+      if (err) {
+        console.error("Error downloading file:", err);
+        // Don't send JSON if headers already sent
+        if (!res.headersSent) {
+          res.status(500).json({
+            status: false,
+            message: "Error downloading ID card",
+          });
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error in downloadIDCard:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        status: false,
+        message: "Internal server error",
+      });
+    }
   }
 };
 
@@ -127,6 +192,6 @@ try {
 
     res.status(result.code).json(result);
   } catch (error) {
-    next(error);
+    throw error
   }
 }
