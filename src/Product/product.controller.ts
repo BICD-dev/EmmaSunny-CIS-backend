@@ -28,7 +28,7 @@ export const addProduct = async (
 
     res.status(result.code).json(result);
   } catch (error) {
-    next(error);
+   throw error
   }
 };
 
@@ -45,7 +45,7 @@ export const getProductDetails = async (
 
     res.status(result.code).json(result);
   } catch (error) {
-    next(error);
+    throw error
   }
 };
 // batch get products
@@ -59,7 +59,7 @@ export const getAllProducts = async (
 
     res.status(result.code).json(result);
   } catch (error) {
-    next(error);
+    throw error
   }
 };
 // Delete a product by ID
@@ -84,6 +84,6 @@ export const deleteProduct = async (
 
     res.status(result.code).json(result);
   } catch (error) {
-    next(error);
+    throw error
   }
 };

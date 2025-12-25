@@ -82,6 +82,9 @@ export const getProductById = async (id: string) => {
     const product = await prisma.product.findUnique({
       where: { id: id },
     });
+    if(!product){
+      throw new AppError("Product not found", 404);
+    }
     return {
       status: true,
       code: 200,
@@ -102,15 +105,12 @@ export const deleteProductService = async (id: string, officer_id: string) => {
         where: { id: id },
       });
       if (!product) {
-        return {
-          success: false,
-          code: 404,
-          message: "Product not found",
-        };
+        throw new AppError("Product not found", 404)
       }
       // delete product
-      const deleteProduct = await tx.product.delete({
-        where: { id: id },
+      const deleteProduct = await tx.product.update({
+        where:{id:id},
+        data:{status:"inactive"}
       });
       // log action
       await tx.log.create({
