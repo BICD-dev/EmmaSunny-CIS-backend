@@ -2,12 +2,12 @@ import fs from "fs";
 import path from "path";
 import { NextFunction, Request, Response } from "express";
 import {
-    deleteCustomerService,
+  deleteCustomerService,
   getAllCustomersService,
   getCustomerById,
   registerCustomerService,
   renewCustomerService,
-  getCustomerStatisticsService
+  getCustomerStatisticsService,
 } from "./customer.service";
 import prisma from "../prisma";
 
@@ -16,7 +16,9 @@ export const getCustomerStatistics = async (req: Request, res: Response) => {
     const result = await getCustomerStatisticsService();
     res.status(result.code).json(result);
   } catch (error: any) {
-    res.status(500).json({ status: false, message: "Failed to fetch statistics" });
+    res
+      .status(500)
+      .json({ status: false, message: "Failed to fetch statistics" });
   }
 };
 export const registerCustomerController = async (
@@ -33,7 +35,7 @@ export const registerCustomerController = async (
       gender,
       DateOfBirth,
       product_id,
-      address
+      address,
     } = payload;
     // validate for missing fields
     if (
@@ -55,20 +57,30 @@ export const registerCustomerController = async (
     const officer = req.user;
     const officer_id = officer?.id;
     // add officer id to payload
-    payload = { ...payload, officer_id };
+    const filePath = req.file
+      ? `/uploads/profile-images/${req.file.filename}`
+      : null;
+    if (!filePath) {
+      return { status: true, code: 404, message: "Profile image is required" };
+    }
+    payload = {
+      ...req.body,
+      profile_image: filePath,
+      officer_id,
+    };
 
     // call the service
     const result = await registerCustomerService(payload);
     return res.status(result.code).json(result);
   } catch (error: any) {
-    throw error
+    throw error;
   }
 };
 export const downloadIDCard = async (req: Request, res: Response) => {
   try {
     const { filename } = req.params;
     const officer_id = req.user?.id;
-    
+
     if (!officer_id) {
       return res.status(403).json({
         status: false,
@@ -78,11 +90,11 @@ export const downloadIDCard = async (req: Request, res: Response) => {
 
     // Sanitize filename to prevent path traversal attacks
     const sanitizedFilename = path.basename(filename);
-    const filePath = path.join(__dirname, '../../id-cards', sanitizedFilename);
+    const filePath = path.join(__dirname, "../../id-cards", sanitizedFilename);
     console.log({
       __dirname,
       sanitizedFilename,
-      filePath
+      filePath,
     });
 
     // Check if id card exists in path
@@ -92,7 +104,7 @@ export const downloadIDCard = async (req: Request, res: Response) => {
         message: "ID card not found",
       });
     }
-    
+
     // Log the download action
     await prisma.log.create({
       data: {
@@ -100,11 +112,14 @@ export const downloadIDCard = async (req: Request, res: Response) => {
         action: `Downloaded_ID_Card_${sanitizedFilename}`,
       },
     });
-    
+
     // Set proper headers before download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
-    
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${sanitizedFilename}"`
+    );
+
     // Download
     res.download(filePath, sanitizedFilename, (err) => {
       if (err) {
@@ -168,30 +183,38 @@ export const renewCustomerController = async (req: Request, res: Response) => {
       });
     }
     // call the service
-    const result = await renewCustomerService(customer_id, product_id, officer_id);
-    res.status(result.code).json(result)
+    const result = await renewCustomerService(
+      customer_id,
+      product_id,
+      officer_id
+    );
+    res.status(result.code).json(result);
   } catch (error: any) {
     throw error;
   }
 };
 
-export const deleteCustomer = async (req: Request, res: Response,next:NextFunction) => {
-try {
+export const deleteCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
     const { id } = req.params;
-    const officer = req.user
-    if(!officer){
+    const officer = req.user;
+    if (!officer) {
       return res.status(403).json({
-        status:false,
-        message:"Officer couldn't be authenticated"
-      })
+        status: false,
+        message: "Officer couldn't be authenticated",
+      });
     }
-    const officer_id = officer?.id
+    const officer_id = officer?.id;
 
     // TODO: Implement product deletion logic in service
-    const result = await deleteCustomerService(id,officer_id)
+    const result = await deleteCustomerService(id, officer_id);
 
     res.status(result.code).json(result);
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};

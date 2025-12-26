@@ -95,7 +95,7 @@ export const registerOfficerService = async (payload: OfficerData) => {
         data: {
           officer_id: officer.id,
           action: `Registered_officer_${officer.first_name}_${officer.last_name}`,
-        },
+        }
       });
 
       // return success message

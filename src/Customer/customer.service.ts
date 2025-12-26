@@ -12,6 +12,7 @@ interface CustomerData {
   DateOfBirth: Date;
   product_id: string;
   officer_id: string;
+  profile_image: string;
 }
 
 export const registerCustomerService = async (payload: CustomerData) => {
@@ -49,7 +50,6 @@ export const registerCustomerService = async (payload: CustomerData) => {
         is_active: true,
         customer_code: customerCode,
         last_visit: new Date(),
-        profile_image: "pic",
         expiry_date: new Date(
           now.getFullYear() + 1,
           now.getMonth(),
@@ -89,8 +89,14 @@ export const registerCustomerService = async (payload: CustomerData) => {
             name: officer.username,
           }
         };
-
+        
         const idCardPath = await generateIDCard(idCardData);
+
+        // update id card path to customer record
+        await tx.customer.update({
+          where: { id: customer.id },
+          data: { id_card: idCardPath },
+        });
 
         return {
           success: true,
@@ -162,6 +168,20 @@ export const getCustomerById = async (id: string) => {
     // get customer by id
     const customer = await prisma.customer.findUnique({
       where: { id: id },
+      include: {
+        product: {
+          select: {
+            product_name: true,
+            price: true
+          }
+        },
+        officer: {
+          select: {
+            first_name: true,
+            last_name: true
+          }
+        }
+      }
     });
     if(!customer){
       throw new AppError("Customer not found", 404);
