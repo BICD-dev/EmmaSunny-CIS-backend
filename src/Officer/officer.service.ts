@@ -27,6 +27,9 @@ export const getOfficerById = async (id: string) => {
     // get officer by id
     const officers = await prisma.officer.findUnique({
       where: { id: id },
+      omit: {
+        password: true,
+      },
     });
     return {
       status: true,
