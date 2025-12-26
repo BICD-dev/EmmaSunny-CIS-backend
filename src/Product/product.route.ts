@@ -13,7 +13,7 @@ router.get('/',authenticate, getAllProducts);
 // Get product details
 router.get('/:id',authenticate, getProductDetails);
 // Delete product
-router.delete('/:id', authenticate, deleteProduct);
+router.delete('/:id', authenticate, deleteProduct); // this marks the prduct as inactive
 
 // edit product .... what am i editting sef?
 
