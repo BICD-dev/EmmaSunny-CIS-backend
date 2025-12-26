@@ -25,6 +25,7 @@ model Customer {
   expiry_date   DateTime?
   is_active     Boolean   @default(true) //this is a boolean
   profile_image String
+  id_card       String?  
 
   product_id String
   officer_id String
@@ -44,7 +45,7 @@ model Product {
   valid_period Int      @default(1) //default is 1 year
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
-
+  status       String   @default("active") //active or inactive
   customers       Customer[]
   customerRenewal CustomerRenewal[]
 }
