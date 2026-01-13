@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addProduct, getProductDetails, deleteProduct, getAllProducts } from './product.controller';
+import { addProduct, getProductDetails, getAllProducts, changeProductStatusController, editProductDetailController } from './product.controller';
 import { authenticate } from '../utils/middleware/authentication';
 
 const router = Router();
@@ -12,9 +12,9 @@ router.get('/',authenticate, getAllProducts);
 
 // Get product details
 router.get('/:id',authenticate, getProductDetails);
-// Delete product
-router.delete('/:id', authenticate, deleteProduct); // this marks the prduct as inactive
+// change product status
+router.delete('/:id', authenticate, changeProductStatusController); // this toggles the product status between active and inactive
 
 // edit product .... what am i editting sef?
-
+router.post("/update", authenticate, editProductDetailController)
 export default router;

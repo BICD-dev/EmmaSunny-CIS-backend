@@ -97,37 +97,64 @@ export const getProductById = async (id: string) => {
   }
 };
 
-export const deleteProductService = async (id: string, officer_id: string) => {
+export const changeProductStatus = async (id: string, officer_id: string) => {
   try {
+    const product = await prisma.product.findUnique({
+      where:{id:id}
+    });
+    const currentStatus = product?.status
+    if (!product) {
+      throw new AppError("Product not found", 404)
+    }
+    const newStatus = currentStatus === "active" ? "inactive" : "active"
     return await prisma.$transaction(async (tx) => {
-      // check if product exists
-      const product = tx.product.findUnique({
-        where: { id: id },
-      });
-      if (!product) {
-        throw new AppError("Product not found", 404)
-      }
       // delete product
       const deleteProduct = await tx.product.update({
         where:{id:id},
-        data:{status:"inactive"}
+        data:{status:newStatus}
       });
       // log action
       await tx.log.create({
         data: {
           officer_id: officer_id,
-          action: `Deleted_product_${deleteProduct.product_name}`,
+          action: `product_Status_Changed_${deleteProduct.product_name}`,
         },
       });
 
       return {
         status: true,
         code: 200,
-        message: "Product deleted successfully",
+        message: "Product Status Changed successfully",
       };
     });
   } catch (error: any) {
-    console.error("An error occured while deleting product: ", error);
+    console.error("An error occured while changing product status: ", error);
     throw error;
   }
 };
+
+export const editProductDetail =  async (data:Partial<ProductData>, id:string, officer_id:string)=>{
+  try {
+    
+    //update product table
+    const product = await prisma.product.update({
+      where:{id:id},
+      data:data,
+    });
+    // log that the action 
+    await prisma.log.create({
+      data:{
+        officer_id:officer_id,
+        action:`EDIT_Product_${product.product_name}`
+      }
+    })
+    return {
+      status:true,
+      code:201,
+      message:"Product details updated successfully"
+    }
+  } catch (error:any) {
+    console.error("Error updating product details: ", error);
+    throw error
+  }
+}

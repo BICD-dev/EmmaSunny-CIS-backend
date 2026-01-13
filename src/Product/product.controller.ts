@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { createProduct, deleteProductService, getProductById, getProductsService } from "./product.service";
+import { changeProductStatus, createProduct, editProductDetail, getProductById, getProductsService } from "./product.service";
 
 // Add a new product
 export const addProduct = async (
@@ -62,8 +62,8 @@ export const getAllProducts = async (
     throw error
   }
 };
-// Delete a product by ID
-export const deleteProduct = async (
+// change a product status by ID
+export const changeProductStatusController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -79,11 +79,38 @@ export const deleteProduct = async (
     }
     const officer_id = officer?.id
 
-    // TODO: Implement product deletion logic in service
-    const result = await deleteProductService(id,officer_id)
+    // call the service
+    const result = await changeProductStatus(id,officer_id)
 
     res.status(result.code).json(result);
   } catch (error) {
     throw error
   }
 };
+
+export const editProductDetailController = async (req: Request, res: Response) => {
+  try {
+    const officer = req.user;
+    if (!officer) {
+      return res.status(403).json({
+        status: false,
+        message: "Officer couldn't be authenticated",
+      });
+    }
+    const officer_id = officer?.id;
+    const {id, formData} = req.body
+    // validate product id
+    if(!id){
+      return res.status(404).json({
+        status:false,
+        message:"Product id not provided"
+      })
+    }
+    // call the service
+    const result = await editProductDetail(formData, id, officer_id);
+    return res.status(result.code).json(result)
+  } catch (error:any) {
+    console.error("Error updating product details");
+    throw error
+  }
+}
