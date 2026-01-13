@@ -61,7 +61,8 @@ model Officer {
   password   String
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-
+  status      String    @default("active")
+  
   customers       Customer[]
   logs            Log[]
   customerRenewal CustomerRenewal[]
