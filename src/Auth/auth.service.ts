@@ -30,6 +30,14 @@ export const loginService = async (data: UserData) => {
       message: "Officer not found ",
     };
   }
+  // throw error for inactive officer
+  if(officer.status === "inactive"){
+    return {
+      status:false,
+      code:403,
+      message:"Officer Account inactive"
+    }
+  }
   // check if password matches with password in the db
   const matchedPassword = await bcrypt.compare(data.password, officer.password);
   if (!matchedPassword) {
@@ -57,7 +65,7 @@ export const loginService = async (data: UserData) => {
   };
 };
 // create either an admin or staff account, only someone with the role admin can do this
-export const registerOfficerService = async (payload: OfficerData) => {
+export const registerOfficerService = async (payload: OfficerData, officer_id:string) => {
   
   // check if the username or email already exists in the db
   const usernameExists = await prisma.officer.findUnique({
@@ -93,7 +101,7 @@ export const registerOfficerService = async (payload: OfficerData) => {
       // log action in the log table
       await tx.log.create({
         data: {
-          officer_id: officer.id,
+          officer_id: officer_id,
           action: `Registered_officer_${officer.first_name}_${officer.last_name}`,
         }
       });

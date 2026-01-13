@@ -68,7 +68,7 @@ export const registerOfficerController = async (
         message: "Only admins can create an account for officers",
       });
     }
-    const result = await registerOfficerService(data);
+    const result = await registerOfficerService(data, user.id);
     return res.status(result.code).json(result);
   } catch (error) {
     console.error("Error logging in: ", error);
