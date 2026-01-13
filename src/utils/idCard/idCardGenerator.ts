@@ -78,13 +78,26 @@ const qrCodeBuffer = await QRCode.toBuffer(qrString, {
           .font("Helvetica-Bold")
           .text("EmmaSunny ID CARD", 15, 15, { align: "center" });
       }
-      // Profile placeholder (circle)
+      // Profile image in circle (or fallback to initial)
       doc.circle(40, 55, 25).stroke("#10b981");
-      doc
-        .fillColor("#10b981")
-        .fontSize(20)
-        .font("Helvetica-Bold")
-        .text(customerData.fullname.charAt(0).toUpperCase(), 30, 45);
+      let profileImagePath = null;
+      if (customerData.profile_image) {
+        // Remove leading slash if present and resolve to absolute path
+        const relativePath = customerData.profile_image.replace(/^[/\\]+/, "");
+        profileImagePath = path.join(__dirname, "../../../", relativePath);
+      }
+      if (profileImagePath && fs.existsSync(profileImagePath)) {
+        doc.save();
+        doc.clip(); // Clip to the circle
+        doc.image(profileImagePath, 15, 30, { width: 50, height: 50 });
+        doc.restore();
+      } else {
+        doc
+          .fillColor("#10b981")
+          .fontSize(20)
+          .font("Helvetica-Bold")
+          .text(customerData.fullname.charAt(0).toUpperCase(), 30, 45);
+      }
 
       // Customer details
       const leftMargin = 75;

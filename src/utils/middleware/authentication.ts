@@ -58,7 +58,7 @@ export const authenticate = async (
       });
       return;
     }
-
+    // validate if the officer is inactive
     const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
 
     // Attach user data to request
