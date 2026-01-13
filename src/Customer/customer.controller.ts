@@ -10,6 +10,7 @@ import {
   getCustomerStatisticsService,
   editCustomerDetail,
   downloadCustomerCSV,
+  getMonthlyCustomerRegistrations,
 } from "./customer.service";
 import prisma from "../prisma";
 
@@ -23,6 +24,17 @@ export const getCustomerStatistics = async (req: Request, res: Response) => {
       .json({ status: false, message: "Failed to fetch statistics" });
   }
 };
+export const getMonthlyCustomerRegistrationsController = async (req: Request, res: Response) => {
+  try {
+    const result = await getMonthlyCustomerRegistrations();
+    res.status(200).json(result);
+
+  } catch (error:any) {
+    throw error
+  }
+}
+
+
 export const registerCustomerController = async (
   req: Request,
   res: Response

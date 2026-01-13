@@ -398,6 +398,46 @@ export const getCustomerStatisticsService = async () => {
     }
   };
 };
+interface MonthlyRegistrations {
+  month:string;
+  registrations:number;
+}
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+export const getMonthlyCustomerRegistrations = async (): Promise<MonthlyRegistrations[]> => {
+  const startOfYear = new Date(new Date().getFullYear(),0,1);
+  const endOfYear = new Date(new Date().getFullYear(), 11,31,23,59,59);
+
+  const customers = await prisma.customer.findMany({
+    where:{
+      created_at:{
+        gte:startOfYear,
+        lte:endOfYear
+      }
+    },
+    select:{
+      created_at:true
+    }
+  });
+
+  const monthCount = Object.fromEntries(
+    MONTHS.map(month=> [month,0])
+  )
+
+  customers.forEach(({created_at})=> {
+    const month = created_at.toLocaleString("en-us",{
+      month:"short"
+    });
+
+    monthCount[month] += 1
+
+  })
+
+  return MONTHS.map(month=>({
+    month,
+    registrations:monthCount[month]
+  }))
+}
 
 export const editCustomerDetail =  async (data:Partial<CustomerData>, id:string, officer_id:string)=>{
   try {

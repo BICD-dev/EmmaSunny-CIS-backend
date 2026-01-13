@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../utils/middleware/authentication";
-import { deleteCustomer, getAllCustomers, getCustomer, registerCustomerController, renewCustomerController, getCustomerStatistics, downloadIDCard, editCustomerDetailController, downloadCustomerCSVController } from "./customer.controller";
+import { deleteCustomer, getAllCustomers, getCustomer, registerCustomerController, renewCustomerController, getCustomerStatistics, downloadIDCard, editCustomerDetailController, downloadCustomerCSVController, getMonthlyCustomerRegistrationsController } from "./customer.controller";
 import { moderateLimiter, relaxedLimiter } from "../utils/middleware/rateLimit";
 import { uploadProfileImage } from "../utils/middleware/uploadProfileImage";
 const router = Router();
@@ -14,4 +14,5 @@ router.delete("/:id", authenticate, deleteCustomer); // delete customer by id
 router.get('/id-card/:filename', authenticate,moderateLimiter, downloadIDCard); // download customer id card
 router.get('/download/csv', authenticate, moderateLimiter, downloadCustomerCSVController); // download customers CSV
 router.post("/update",authenticate,editCustomerDetailController); // edit customer details 
+router.get("/analytics/customer-registrations",authenticate, getMonthlyCustomerRegistrationsController)
 export default router

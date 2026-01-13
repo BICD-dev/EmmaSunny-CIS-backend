@@ -279,3 +279,11 @@
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-26 07:17:28"}
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-26 07:22:47"}
 {"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2025-12-26 07:23:20"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2026-01-13 01:33:00"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2026-01-13 01:34:49"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2026-01-13 01:36:00"}
+{"level":"info","message":"App is running on port 3000","service":"cis-backend","timestamp":"2026-01-13 01:38:01"}
+{"level":"warn","message":"404 Not Found: GET /.well-known/appspecific/com.chrome.devtools.json","service":"cis-backend","timestamp":"2026-01-13 01:41:48"}
+{"ip":"127.0.0.1","level":"warn","message":"Route /.well-known/appspecific/com.chrome.devtools.json not found","method":"GET","service":"cis-backend","statusCode":404,"timestamp":"2026-01-13 01:41:48","url":"/.well-known/appspecific/com.chrome.devtools.json","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+{"level":"warn","message":"404 Not Found: GET /favicon.ico","service":"cis-backend","timestamp":"2026-01-13 01:41:49"}
+{"ip":"127.0.0.1","level":"warn","message":"Route /favicon.ico not found","method":"GET","service":"cis-backend","statusCode":404,"timestamp":"2026-01-13 01:41:49","url":"/favicon.ico","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
