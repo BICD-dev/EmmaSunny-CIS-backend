@@ -8,6 +8,8 @@ import {
   registerCustomerService,
   renewCustomerService,
   getCustomerStatisticsService,
+  editCustomerDetail,
+  downloadCustomerCSV,
 } from "./customer.service";
 import prisma from "../prisma";
 
@@ -91,11 +93,7 @@ export const downloadIDCard = async (req: Request, res: Response) => {
     // Sanitize filename to prevent path traversal attacks
     const sanitizedFilename = path.basename(filename);
     const filePath = path.join(__dirname, "../../id-cards", sanitizedFilename);
-    console.log({
-      __dirname,
-      sanitizedFilename,
-      filePath,
-    });
+   
 
     // Check if id card exists in path
     if (!fs.existsSync(filePath)) {
@@ -144,6 +142,44 @@ export const downloadIDCard = async (req: Request, res: Response) => {
   }
 };
 
+export const downloadCustomerCSVController = async (req: Request, res: Response) => {
+  try {
+    const officer_id = req.user?.id;
+    if (!officer_id) {
+      return res.status(403).json({
+        status: false,
+        message: "Officer couldn't be authenticated",
+      });
+    }
+
+    const result = await downloadCustomerCSV();
+    if (!result || !result.status) {
+      return res.status(result?.code ?? 500).json(result);
+    }
+
+    // Log the download action
+    await prisma.log.create({
+      data: {
+        officer_id: officer_id,
+        action: `Downloaded_customers_csv`,
+      },
+    });
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.filename || "customers.csv"}"`
+    );
+
+    return res.send(result.csv);
+  } catch (error: any) {
+    console.error("Error in downloadCustomerCSVController:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ status: false, message: "Internal server error" });
+    }
+  }
+};
+
 export const getAllCustomers = async (req: Request, res: Response) => {
   try {
     // call the service
@@ -166,7 +202,7 @@ export const getCustomer = async (req: Request, res: Response) => {
     }
     // call the service
     const result = await getCustomerById(id);
-    res.status(result.code).json(result);
+    return res.status(result.code).json(result);
   } catch (error: any) {
     throw error;
   }
@@ -174,12 +210,19 @@ export const getCustomer = async (req: Request, res: Response) => {
 
 export const renewCustomerController = async (req: Request, res: Response) => {
   try {
-    const { customer_id, officer_id, product_id } = req.body;
+    const { customer_id, product_id } = req.body;
     // validate missing fields
-    if (!customer_id || !officer_id || !product_id) {
+    if (!customer_id || !product_id) {
       return res.status(400).json({
         status: false,
         message: "Missing fields",
+      });
+    }
+    const officer_id = req.user?.id;
+    if (!officer_id) {
+      return res.status(403).json({
+        status: false,
+        message: "Officer couldn't be authenticated",
       });
     }
     // call the service
@@ -188,7 +231,7 @@ export const renewCustomerController = async (req: Request, res: Response) => {
       product_id,
       officer_id
     );
-    res.status(result.code).json(result);
+    return res.status(result.code).json(result);
   } catch (error: any) {
     throw error;
   }
@@ -208,13 +251,46 @@ export const deleteCustomer = async (
         message: "Officer couldn't be authenticated",
       });
     }
+    // only admins can delete a customer
+    if(officer.role !== "admin"){
+      return res.status(403).json({
+        status: false,
+        message: "Only admins can delete a customer",
+      });
+    }
     const officer_id = officer?.id;
-
-    // TODO: Implement product deletion logic in service
+    // call service
     const result = await deleteCustomerService(id, officer_id);
 
-    res.status(result.code).json(result);
+    return res.status(result.code).json(result);
   } catch (error) {
     throw error;
   }
 };
+
+export const editCustomerDetailController = async (req: Request, res: Response) => {
+  try {
+    const officer = req.user;
+    if (!officer) {
+      return res.status(403).json({
+        status: false,
+        message: "Officer couldn't be authenticated",
+      });
+    }
+    const officer_id = officer?.id;
+    const {id, formData} = req.body
+    // validate customer id
+    if(!id){
+      return res.status(404).json({
+        status:false,
+        message:"Customer id not provided"
+      })
+    }
+    // call the service
+    const result = await editCustomerDetail(formData, id, officer_id);
+    return res.status(result.code).json(result)
+  } catch (error:any) {
+    console.error("Error updating customer details");
+    throw error
+  }
+}
