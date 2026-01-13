@@ -290,7 +290,7 @@ export const editCustomerDetailController = async (req: Request, res: Response) 
       });
     }
     const officer_id = officer?.id;
-    const {id, formData} = req.body
+    const {id, ...formData} = req.body;
     // validate customer id
     if(!id){
       return res.status(404).json({
@@ -298,9 +298,16 @@ export const editCustomerDetailController = async (req: Request, res: Response) 
         message:"Customer id not provided"
       })
     }
+    // If a profile image was uploaded, attach its path to the formData (optional)
+    const filePath = req.file ? `/uploads/profile-images/${req.file.filename}` : null;
+    const updatedFormData = { ...(formData || {}) };
+    if (filePath) {
+      updatedFormData.profile_image = filePath;
+    }
+
     // call the service
-    const result = await editCustomerDetail(formData, id, officer_id);
-    return res.status(result.code).json(result)
+    const result = await editCustomerDetail(updatedFormData, id, officer_id);
+    return res.status(result.code).json(result);
   } catch (error:any) {
     console.error("Error updating customer details");
     throw error

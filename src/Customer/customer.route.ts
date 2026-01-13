@@ -13,6 +13,6 @@ router.get("/:id", authenticate, getCustomer) // get customer by id
 router.delete("/:id", authenticate, deleteCustomer); // delete customer by id
 router.get('/id-card/:filename', authenticate,moderateLimiter, downloadIDCard); // download customer id card
 router.get('/download/csv', authenticate, moderateLimiter, downloadCustomerCSVController); // download customers CSV
-router.post("/update",authenticate,editCustomerDetailController); // edit customer details 
+router.put("/update",authenticate,uploadProfileImage.single('profile_image'),editCustomerDetailController); // edit customer details 
 router.get("/analytics/customer-registrations",authenticate, getMonthlyCustomerRegistrationsController)
 export default router
