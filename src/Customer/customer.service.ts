@@ -1,15 +1,14 @@
-
 import prisma from "../prisma";
 import { AppError } from "../utils/middleware/error-handler";
-import { generateIDCard } from '../utils/idCard/idCardGenerator';
-import { Parser } from 'json2csv';
+import { generateIDCard } from "../utils/idCard/idCardGenerator";
+import { Parser } from "json2csv";
 interface CustomerData {
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
   gender: string;
-  address:string;
+  address: string;
   DateOfBirth: Date;
   product_id: string;
   officer_id: string;
@@ -34,7 +33,8 @@ export const registerCustomerService = async (payload: CustomerData) => {
 
     const year = new Date().getFullYear();
 
-    return await prisma.$transaction(async (tx) => {
+    // start database transaction
+    const customer = await prisma.$transaction(async (tx) => {
       const count = await tx.customer.count({
         where: {
           customer_code: {
@@ -45,7 +45,7 @@ export const registerCustomerService = async (payload: CustomerData) => {
 
       const customerCode = generateCustomerCode(year, count + 1);
       let now = new Date();
-      
+
       const data = {
         ...payload,
         is_active: true,
@@ -59,83 +59,81 @@ export const registerCustomerService = async (payload: CustomerData) => {
       };
 
       let customer;
-      try {
-        customer = await tx.customer.create({
-          data: data,
-        });
 
-        await tx.log.create({
-          data: {
-            officer_id: officer.id,
-            action: `Registered_customer_${customer.customer_code}`
-          }
-        });
+      customer = await tx.customer.create({
+        data: data,
+      });
 
-        // Generate ID Card PDF
-        const idCardData = {
-          id: customer.id,
-          fullname: `${customer.first_name} ${customer.last_name}`,
-          email: customer.email,
-          phone: customer.phone,
-          customerCode: customer.customer_code,
-          dateOfBirth: customer.DateOfBirth,
-          address: customer.address,
-          registration_date: customer.created_at,
-          expiry_date: customer.expiry_date,
-          profile_image: customer.profile_image,
-          product: {
-            name: product.product_name,
-            price: product.price,
-          },
-          officer: {
-            name: officer.username,
-          }
-        };
-        
-        const idCardPath = await generateIDCard(idCardData);
-
-        // update id card path to customer record
-        await tx.customer.update({
-          where: { id: customer.id },
-          data: { id_card: idCardPath },
-        });
-
-        return {
-          success: true,
-          message: "Customer created successfully",
-          code: 201,
-          data: {
-            id: customer.id,
-            fullname: `${customer.first_name} ${customer.last_name}`,
-            email: customer.email,
-            phone: customer.phone,
-            customerCode: customer.customer_code,
-            dateOfBirth: customer.DateOfBirth,
-            address: customer.address,
-            last_visit: customer.last_visit,
-            registration_date: customer.created_at,
-            expiry_date: customer.expiry_date,
-            is_active: customer.is_active,
-            idCardPath: idCardPath, // Add the PDF path
-            product: {
-              id: product.id,
-              name: product.product_name,
-              price: product.price,
-            },
-            officer: {
-              id: officer.id,
-              name: officer.first_name + " " + officer.last_name,
-            },
-          },
-        };
-      } catch (error: any) {
-        if (error.code === "P2002") {
-          throw new AppError("Customer already exists", 409);
-        }
-        throw error;
-      }
+      await tx.log.create({
+        data: {
+          officer_id: officer.id,
+          action: `Registered_customer_${customer.customer_code}`,
+        },
+      });
+      return customer;
     });
+
+    // Generate ID Card PDF
+    const idCardData = {
+      id: customer.id,
+      fullname: `${customer.first_name} ${customer.last_name}`,
+      email: customer.email,
+      phone: customer.phone,
+      customerCode: customer.customer_code,
+      dateOfBirth: customer.DateOfBirth,
+      address: customer.address,
+      registration_date: customer.created_at,
+      expiry_date: customer.expiry_date,
+      profile_image: customer.profile_image,
+      product: {
+        name: product.product_name,
+        price: product.price,
+      },
+      officer: {
+        name: officer.username,
+      },
+    };
+
+    const idCardPath = await generateIDCard(idCardData);
+
+    // update id card path to customer record
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: { id_card: idCardPath },
+    });
+
+    return {
+      success: true,
+      message: "Customer created successfully",
+      code: 201,
+      data: {
+        id: customer.id,
+        fullname: `${customer.first_name} ${customer.last_name}`,
+        email: customer.email,
+        phone: customer.phone,
+        customerCode: customer.customer_code,
+        dateOfBirth: customer.DateOfBirth,
+        address: customer.address,
+        last_visit: customer.last_visit,
+        registration_date: customer.created_at,
+        expiry_date: customer.expiry_date,
+        is_active: customer.is_active,
+        idCardPath: idCardPath, // Add the PDF path
+        product: {
+          id: product.id,
+          name: product.product_name,
+          price: product.price,
+        },
+        officer: {
+          id: officer.id,
+          name: officer.first_name + " " + officer.last_name,
+        },
+      },
+    };
   } catch (error: any) {
+    if (error.code === "P2002") {
+      throw new AppError("Customer already exists", 409);
+    }
     console.error("Error creating customer: ", error);
     throw error;
   }
@@ -145,17 +143,17 @@ export const getAllCustomersService = async () => {
   try {
     // this is a batch get for customers
     const customers = await prisma.customer.findMany({
-      include:{
-        product:{
-          select:{
-            product_name:true
-          }
-        }
-      }
+      include: {
+        product: {
+          select: {
+            product_name: true,
+          },
+        },
+      },
     });
     return {
       status: true,
-      code:200,
+      code: 200,
       message: "Customers details gotten successfully",
       data: customers,
     };
@@ -174,18 +172,18 @@ export const getCustomerById = async (id: string) => {
         product: {
           select: {
             product_name: true,
-            price: true
-          }
+            price: true,
+          },
         },
         officer: {
           select: {
             first_name: true,
-            last_name: true
-          }
-        }
-      }
+            last_name: true,
+          },
+        },
+      },
     });
-    if(!customer){
+    if (!customer) {
       throw new AppError("Customer not found", 404);
     }
     return {
@@ -232,40 +230,40 @@ export const renewCustomerService = async (
     // either from today or from now
     let baseDate = customer.expiry_date ?? now;
     let new_expiry = new Date(baseDate);
-    new_expiry.setFullYear(new_expiry.getFullYear()+1)
+    new_expiry.setFullYear(new_expiry.getFullYear() + 1);
     // update customer, renewal table and logs
     return await prisma.$transaction(async (tx) => {
       // Generate ID Card PDF
-        const idCardData = {
-          id: customer.id,
-          fullname: `${customer.first_name} ${customer.last_name}`,
-          email: customer.email,
-          phone: customer.phone,
-          customerCode: customer.customer_code,
-          dateOfBirth: customer.DateOfBirth,
-          address: customer.address,
-          registration_date: customer.created_at,
-          expiry_date: new_expiry,
-          profile_image: customer.profile_image,
-          product: {
-            name: product.product_name,
-            price: product.price,
-          },
-          officer: {
-            name: officer.first_name + " " + officer.last_name,
-          }
-        };
-        
-        const idCardPath = await generateIDCard(idCardData);
+      const idCardData = {
+        id: customer.id,
+        fullname: `${customer.first_name} ${customer.last_name}`,
+        email: customer.email,
+        phone: customer.phone,
+        customerCode: customer.customer_code,
+        dateOfBirth: customer.DateOfBirth,
+        address: customer.address,
+        registration_date: customer.created_at,
+        expiry_date: new_expiry,
+        profile_image: customer.profile_image,
+        product: {
+          name: product.product_name,
+          price: product.price,
+        },
+        officer: {
+          name: officer.first_name + " " + officer.last_name,
+        },
+      };
 
-        // update customer in the customer table
+      const idCardPath = await generateIDCard(idCardData);
+
+      // update customer in the customer table
       const updatedCustomer = await tx.customer.update({
         where: { id: customer_id },
         data: {
           expiry_date: new_expiry,
           is_active: true,
           product_id: product_id,
-          id_card: idCardPath // update id card path
+          id_card: idCardPath, // update id card path
         },
       });
       // update customer renewal table
@@ -299,7 +297,7 @@ export const renewCustomerService = async (
           registration_date: updatedCustomer.created_at,
           expiry_date: updatedCustomer.expiry_date,
           is_active: updatedCustomer.is_active,
-          idCardPath: idCardPath, 
+          idCardPath: idCardPath,
           product: {
             id: product.id,
             name: product.product_name,
@@ -360,7 +358,15 @@ export const deleteCustomerService = async (id: string, officer_id: string) => {
 export const getCustomerStatisticsService = async () => {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  const endOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  );
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
   startOfWeek.setHours(0, 0, 0, 0);
@@ -374,14 +380,20 @@ export const getCustomerStatisticsService = async () => {
     expired,
     registeredThisMonth,
     expiringThisWeek,
-    expiringThisMonth
+    expiringThisMonth,
   ] = await Promise.all([
     prisma.customer.count(),
     prisma.customer.count({ where: { is_active: true } }),
     prisma.customer.count({ where: { is_active: false } }),
-    prisma.customer.count({ where: { created_at: { gte: startOfMonth, lte: endOfMonth } } }),
-    prisma.customer.count({ where: { expiry_date: { gte: startOfWeek, lte: endOfWeek } } }),
-    prisma.customer.count({ where: { expiry_date: { gte: startOfMonth, lte: endOfMonth } } })
+    prisma.customer.count({
+      where: { created_at: { gte: startOfMonth, lte: endOfMonth } },
+    }),
+    prisma.customer.count({
+      where: { expiry_date: { gte: startOfWeek, lte: endOfWeek } },
+    }),
+    prisma.customer.count({
+      where: { expiry_date: { gte: startOfMonth, lte: endOfMonth } },
+    }),
   ]);
 
   return {
@@ -394,88 +406,103 @@ export const getCustomerStatisticsService = async () => {
       expired_customers: expired,
       registered_this_month: registeredThisMonth,
       expiring_this_week: expiringThisWeek,
-      expiring_this_month: expiringThisMonth
-    }
+      expiring_this_month: expiringThisMonth,
+    },
   };
 };
 interface MonthlyRegistrations {
-  month:string;
-  registrations:number;
+  month: string;
+  registrations: number;
 }
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
-export const getMonthlyCustomerRegistrations = async (): Promise<MonthlyRegistrations[]> => {
-  const startOfYear = new Date(new Date().getFullYear(),0,1);
-  const endOfYear = new Date(new Date().getFullYear(), 11,31,23,59,59);
+export const getMonthlyCustomerRegistrations = async (): Promise<
+  MonthlyRegistrations[]
+> => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const endOfYear = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59);
 
   const customers = await prisma.customer.findMany({
-    where:{
-      created_at:{
-        gte:startOfYear,
-        lte:endOfYear
-      }
+    where: {
+      created_at: {
+        gte: startOfYear,
+        lte: endOfYear,
+      },
     },
-    select:{
-      created_at:true
-    }
+    select: {
+      created_at: true,
+    },
   });
 
-  const monthCount = Object.fromEntries(
-    MONTHS.map(month=> [month,0])
-  )
+  const monthCount = Object.fromEntries(MONTHS.map((month) => [month, 0]));
 
-  customers.forEach(({created_at})=> {
-    const month = created_at.toLocaleString("en-us",{
-      month:"short"
+  customers.forEach(({ created_at }) => {
+    const month = created_at.toLocaleString("en-us", {
+      month: "short",
     });
 
-    monthCount[month] += 1
+    monthCount[month] += 1;
+  });
 
-  })
-
-  return MONTHS.map(month=>({
+  return MONTHS.map((month) => ({
     month,
-    registrations:monthCount[month]
-  }))
-}
+    registrations: monthCount[month],
+  }));
+};
 
-export const editCustomerDetail =  async (data:Partial<CustomerData>, id:string, officer_id:string)=>{
+export const editCustomerDetail = async (
+  data: Partial<CustomerData>,
+  id: string,
+  officer_id: string
+) => {
   try {
-    
     //update customer table
     const customer = await prisma.customer.update({
-      where:{id:id},
-      data:data,
+      where: { id: id },
+      data: data,
     });
-    // log that the action 
+    // log that the action
     await prisma.log.create({
-      data:{
-        officer_id:officer_id,
-        action:`EDIT_CUSTOMER_${customer.customer_code}`
-      }
-    })
+      data: {
+        officer_id: officer_id,
+        action: `EDIT_CUSTOMER_${customer.customer_code}`,
+      },
+    });
     return {
-      status:true,
-      code:201,
-      message:"Customer details updated successfully"
-    }
-  } catch (error:any) {
+      status: true,
+      code: 201,
+      message: "Customer details updated successfully",
+    };
+  } catch (error: any) {
     console.error("Error updating customer details: ", error);
-    throw error
+    throw error;
   }
-}
+};
 
 export const downloadCustomerCSV = async () => {
   try {
     const customers = await prisma.customer.findMany({
-      include:{
-        officer:{
-          select:{
-            first_name:true,
-            last_name:true
-        }
-        }
-      }
+      include: {
+        officer: {
+          select: {
+            first_name: true,
+            last_name: true,
+          },
+        },
+      },
     });
 
     if (!customers || customers.length === 0) {
@@ -535,4 +562,3 @@ function calculateAge(dob: Date) {
 function generateCustomerCode(year: number, sequence: number) {
   return `CIS-${year}-${sequence.toString().padStart(5, "0")}`;
 }
-
